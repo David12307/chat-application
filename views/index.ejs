@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chat - Home page</title>
+    <script src="https://cdn.socket.io/socket.io-3.0.1.min.js"></script>
+
+    <style>
+        body {
+            background-color: #000000;
+        }
+
+        input {
+            background-color: rgb(31, 31, 31);
+            border: 0px;
+            color: white;
+            border-radius: 15px;
+            padding: 10px;
+            width: 90vw;
+            height: 5vh;
+            outline: none;
+        }
+
+        .inputs {
+            position: absolute;
+            top: 82vh;
+        }
+
+        #message-input {
+            margin-bottom: 10px;
+        }
+        
+        button {
+            background-color: #3E065F;
+            border: 0px;
+            outline: none;
+            width: 6vw;
+            margin-left: 10px;
+            height: 50px;
+            color: white;
+            border-radius: 10px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            font-size: 15px;
+        }
+
+        #socket-id {
+            color: white;
+            padding-left: 10px;
+        }
+
+        .message {
+            background-color: rgb(31, 31, 31);
+            color: white;
+            padding-top: 10px;
+            padding-left: 20px;
+            height: 10vh;
+            width: 40vw;
+            border-radius: 10px;
+            margin-left: 1.5%;
+            margin-top: 10px;
+        }
+    </style>
+
+
+</head>
+<body>
+    <h3 id="socket-id"></h3>
+    
+    <div id="messages">
+
+    </div>
+
+    <div class="inputs">
+        <form id="form">
+            <input type="text" placeholder="Message" name="message" id='message-input'>
+            <button id="send-msg-button">SEND</button>
+        </form>
+        <input type="text" placeholder="Room/Token" name="room" id="room-input">
+        <button id="join-room-button">JOIN</button>
+    </div>
+
+    <script>
+        const socket = io('http://localhost:3000/');
+        let messageInput = document.getElementById('message-input');
+        let roomInput = document.getElementById('room-input');
+        let form = document.getElementById('form');
+        let msgDiv = document.getElementById('messages');
+        let joinRoomButton = document.getElementById('join-room-button');
+        let sendMsgButton = document.getElementById('send-msg-button');
+        let socketId = document.getElementById('socket-id');
+
+        socket.on('connect', () => {
+            console.log(socket.id);
+            socketId.textContent = 'Connected with ID: ' + socket.id;
+        });
+
+        socket.on('receive-message', (msg, user) => {
+            displayMessage(msg, user);
+        })
+
+        function displayMessage(msg, user) {
+            // Create the div
+            var div = document.createElement('div');
+            div.classList.add('message');
+
+            // Create the span to show the username
+            var span = document.createElement('span');
+            span.textContent = user;
+            span.classList.add('useraname');
+
+            // Create the element for the message
+            var p = document.createElement('p');
+            p.textContent = msg;
+            p.classList.add('msg');
+
+            // Append all to the first div and then to the messages div
+            div.appendChild(span);
+            div.appendChild(p);
+            msgDiv.appendChild(div);
+        }
+
+        form.addEventListener('submit', (e) => {
+            e.preventDefault();
+
+            socket.emit('send-message', messageInput.value);
+            messageInput.value = '';
+        });
+
+        joinRoomButton.addEventListener('click', (e) => {
+            socket.emit('join-room', roomInput.value, text => {
+                alert(text);
+            });
+        })
+
+        
+    </script>
+
+</body>
+</html>
